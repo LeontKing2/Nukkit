@@ -26,7 +26,7 @@ public class BlockEntityHopper extends BlockEntitySpawnable implements Inventory
 
     protected HopperInventory inventory;
 
-    public int transferCooldown = 8;
+    public int transferCooldown = 24;
 
     private AxisAlignedBB pickupArea;
 
@@ -171,7 +171,7 @@ public class BlockEntityHopper extends BlockEntitySpawnable implements Inventory
             }
 
             if (changed) {
-                this.setTransferCooldown(8);
+                this.setTransferCooldown(24);
                 setDirty();
             }
         }
@@ -222,11 +222,13 @@ public class BlockEntityHopper extends BlockEntitySpawnable implements Inventory
 
                 if (!item.isNull()) {
                     Item itemToAdd = item.clone();
-                    itemToAdd.count = 1;
-
-                    if (!this.inventory.canAddItem(itemToAdd)) {
+                    itemToAdd.count = itemToAdd.count <= 3 ? itemToAdd.count : 3;
+                    int maxCount = maxItemAdd(this.inventory, itemToAdd);
+                    // server.getLogger().error("moved: " + maxCount);
+                    if (maxCount  <= 0) {
                         continue;
                     }
+                    itemToAdd.count = maxCount;
 
                     InventoryMoveItemEvent ev = new InventoryMoveItemEvent(inv, this.inventory, this, itemToAdd, InventoryMoveItemEvent.Action.SLOT_CHANGE);
                     this.server.getPluginManager().callEvent(ev);
@@ -241,7 +243,7 @@ public class BlockEntityHopper extends BlockEntitySpawnable implements Inventory
                         continue;
                     }
 
-                    item.count--;
+                    item.count = (item.count - maxCount);
 
                     inv.setItem(i, item);
                     return true;
@@ -249,6 +251,30 @@ public class BlockEntityHopper extends BlockEntitySpawnable implements Inventory
             }
         }
         return false;
+    }
+
+    private int maxItemAdd(BaseInventory inventory, Item item) {
+        item = item.clone();
+        int startCont = item.getCount();
+        boolean checkDamage = item.hasMeta();
+        boolean checkTag = item.getCompoundTag() != null;
+        for (int i = 0; i < inventory.getSize(); ++i) {
+            Item slot = inventory.getItem(i);
+            if (item.equals(slot, checkDamage, checkTag)) {
+                int diff;
+                if ((diff = slot.getMaxStackSize() - slot.getCount()) > 0) {
+                    item.setCount(item.getCount() - diff);
+                }
+            } else if (slot.getId() == Item.AIR) {
+                // server.getLogger().warning(item.getCount() - inventory.getMaxStackSize() + " air");
+                item.setCount(item.getCount() - inventory.getMaxStackSize());
+            }
+            // server.getLogger().warning(slot.getId() + " ");
+            if(item.count <= 0) {
+                return startCont;
+            }
+        }
+        return 0;
     }
 
     public boolean pickupItems() {
@@ -413,11 +439,13 @@ public class BlockEntityHopper extends BlockEntitySpawnable implements Inventory
 
                 if (!item.isNull()) {
                     Item itemToAdd = item.clone();
-                    itemToAdd.setCount(1);
-
-                    if (!inventory.canAddItem(itemToAdd)) {
+                    itemToAdd.count = itemToAdd.count <= 3 ? itemToAdd.count : 3;
+                    int maxCount = maxItemAdd((ContainerInventory)inventory, itemToAdd);
+                    // server.getLogger().error("moved: " + maxCount);
+                    if (maxCount  <= 0) {
                         continue;
                     }
+                    itemToAdd.count = maxCount;
 
                     InventoryMoveItemEvent ev = new InventoryMoveItemEvent(this.inventory, inventory, this, itemToAdd, InventoryMoveItemEvent.Action.SLOT_CHANGE);
                     this.server.getPluginManager().callEvent(ev);
@@ -432,7 +460,7 @@ public class BlockEntityHopper extends BlockEntitySpawnable implements Inventory
                         continue;
                     }
 
-                    item.count--;
+                    item.count = (item.count - maxCount);
                     this.inventory.setItem(i, item);
                     return true;
                 }
