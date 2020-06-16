@@ -226,7 +226,7 @@ public abstract class BlockLiquid extends BlockTransparentMeta {
                     decay = newDecay;
                     boolean decayed = decay < 0;
                     Block to;
-                    if (decayed) {
+                    if (decayed || canFastDrain()) {
                         to = Block.get(BlockID.AIR);
                     } else {
                         to = getBlock(decay);
@@ -271,6 +271,60 @@ public abstract class BlockLiquid extends BlockTransparentMeta {
             }
         }
         return 0;
+    }
+
+    public boolean canFastDrain() {
+        int data = getData(this);
+        if (this instanceof BlockWater) {
+            if (getData(this.level.getBlock((int) this.x, (int) this.y, (int) this.z).down()) < 0) {
+                return false;
+            }
+            Block north = this.level.getBlock((int) this.x, (int) this.y, (int) this.z).north();
+            if (north instanceof BlockWater && getData(north) < data) {
+                return false;
+            }
+            Block south = this.level.getBlock((int) this.x, (int) this.y, (int) this.z).south();
+            if (south instanceof BlockWater && getData(south) < data) {
+                return false;
+            }
+            Block west = this.level.getBlock((int) this.x, (int) this.y, (int) this.z).west();
+            if (west instanceof BlockWater && getData(west) < data) {
+                return false;
+            }
+            Block east = this.level.getBlock((int) this.x, (int) this.y, (int) this.z).east();
+            if (east instanceof BlockWater && getData(east) < data) {
+                return false;
+            }
+        } else if (this instanceof BlockLava) {
+            if (getData(this.level.getBlock((int) this.x, (int) this.y, (int) this.z).down()) < 0
+                    || !(this.level.getBlock((int) this.x, (int) this.y, (int) this.z).up() instanceof BlockAir)) {
+                return false;
+            }
+            Block north = this.level.getBlock((int) this.x, (int) this.y, (int) this.z).north();
+            if (north instanceof BlockLava && getData(north) < data) {
+                return false;
+            }
+            Block south = this.level.getBlock((int) this.x, (int) this.y, (int) this.z).south();
+            if (south instanceof BlockLava && getData(south) < data) {
+                return false;
+            }
+            Block west = this.level.getBlock((int) this.x, (int) this.y, (int) this.z).west();
+            if (west instanceof BlockLava && getData(west) < data) {
+                return false;
+            }
+            Block east = this.level.getBlock((int) this.x, (int) this.y, (int) this.z).east();
+            if (east instanceof BlockLava && getData(east) < data) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+
+
+    public int getData(Block block) {
+        int data = getFlowDecay(block);
+        return data < 8 ? data : 0;
     }
 
     protected void flowIntoBlock(Block block, int newFlowDecay) {
