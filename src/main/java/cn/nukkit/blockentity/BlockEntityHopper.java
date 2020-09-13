@@ -38,6 +38,8 @@ public class BlockEntityHopper extends BlockEntitySpawnable implements Inventory
     protected void initBlockEntity() {
         if (this.namedTag.contains("TransferCooldown")) {
             this.transferCooldown = this.namedTag.getInt("TransferCooldown");
+        } else {
+            this.transferCooldown = 24;
         }
 
         this.inventory = new HopperInventory(this);
