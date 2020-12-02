@@ -197,23 +197,9 @@ public class CraftingManager {
             }
         }
 
-<<<<<<< HEAD
-       for (Recipe recipe : this.getRecipes()) {
-           if (recipe instanceof ShapedRecipe) {
-               pk.addShapedRecipe((ShapedRecipe) recipe);
-           } else if (recipe instanceof ShapelessRecipe) {
-               pk.addShapelessRecipe((ShapelessRecipe) recipe);
-           }
-       }
-
-       for (FurnaceRecipe recipe : this.getFurnaceRecipes().values()) {
-           pk.addFurnaceRecipe(recipe);
-       }
-=======
         for (FurnaceRecipe recipe : this.getFurnaceRecipes().values()) {
             pk.addFurnaceRecipe(recipe);
         }
->>>>>>> cd20c264e9f6231dfd716d5b803fbf2d56ea1f38
 
         for (BrewingRecipe recipe : brewingRecipes.values()) {
             pk.addBrewingRecipe(recipe);
