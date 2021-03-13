@@ -248,14 +248,15 @@ public final class ClientChainData implements LoginChainData {
                 if (extra.has("displayName")) this.username = extra.get("displayName").getAsString();
                 if (extra.has("identity")) this.clientUUID = UUID.fromString(extra.get("identity").getAsString());
                 if (extra.has("XUID")) this.xuid = extra.get("XUID").getAsString();
+                if (extra.has("Waterdog_OriginalUUID")) this.xuid = extra.get("Waterdog_OriginalUUID").getAsString();
             }
             if (chainMap.has("identityPublicKey"))
                 this.identityPublicKey = chainMap.get("identityPublicKey").getAsString();
         }
 
-        if (!xboxAuthed) {
-            xuid = null;
-        }
+        // if (!xboxAuthed) {
+        //     xuid = null;
+        // }
     }
 
     private boolean verifyChain(List<String> chains) throws Exception {
